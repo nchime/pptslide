@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiteLLM - 오픈소스 AI Gateway 소개</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <style>
+        /* === 기본 리셋 및 전역 스타일 === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .slides-wrapper {
+            display: flex;
+            transition: transform 0.4s ease;
+        }
+
+        /* === 슬라이드 기본 레이아웃 === */
+        .slide {
+            min-width: 100vw;
+            width: 100vw;
+            height: 100vh;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: 30px;
+            right: 50px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* === 시작 화면 (Title Slide) === */
+        .slide-1 {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-1::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(233, 69, 96, 0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .title-logo {
+            font-size: 72px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .title-logo span {
+            color: #e94560;
+        }
+
+        .title-subtitle {
+            font-size: 28px;
+            font-weight: 300;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title-meta {
+            font-size: 16px;
+            opacity: 0.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title-badge {
+            display: inline-block;
+            background: rgba(233, 69, 96, 0.2);
+            border: 1px solid rgba(233, 69, 96, 0.5);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 30px;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide-1 .slide-number {
+            bottom: 80px;
+        }
+
+        /* === 표준 콘텐츠 슬라이드 === */
+        .slide-content {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        .slide-header {
+            margin-bottom: 50px;
+        }
+
+        .slide-header h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+
+        .slide-header .accent-line {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #e94560, #0f3460);
+            border-radius: 2px;
+        }
+
+        .content-area {
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* === 개요 Grid (2x2 카드) === */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .overview-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid;
+        }
+        .overview-card:nth-child(1) { border-color: #e94560; }
+        .overview-card:nth-child(2) { border-color: #0f3460; }
+        .overview-card:nth-child(3) { border-color: #16a085; }
+        .overview-card:nth-child(4) { border-color: #9b59b6; }
+
+        .overview-card h3 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .overview-card h3 svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            fill: none;
+            stroke: currentColor;
+        }
+        .overview-card p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #e94560;
+        }
+        .stat-label {
+            font-size: 15px;
+            color: #666;
+        }
+
+        /* === Feature Grid (3열 카드) === */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            fill: none;
+            stroke: currentColor;
+        }
+        .feature-card:nth-child(1) .feature-icon { background: #ffe8ec; color: #e94560; }
+        .feature-card:nth-child(2) .feature-icon { background: #e8f4fd; color: #0f3460; }
+        .feature-card:nth-child(3) .feature-icon { background: #e8f8f5; color: #16a085; }
+        .feature-card:nth-child(4) .feature-icon { background: #f4ecf7; color: #9b59b6; }
+        .feature-card:nth-child(5) .feature-icon { background: #fef5e7; color: #f39c12; }
+        .feature-card:nth-child(6) .feature-icon { background: #fde8e8; color: #c0392b; }
+
+        .feature-card h4 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a1a2e;
+        }
+        .feature-card p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        /* === 분할 레이아웃 (2열) === */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .split-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .split-section h3 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            color: #1a1a2e;
+        }
+        .split-section ul {
+            list-style: none;
+        }
+        .split-section li {
+            padding: 10px 0;
+            font-size: 17px;
+            line-height: 1.6;
+            color: #444;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .split-section li::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 8px;
+        }
+        .split-left li::before { background: #e94560; }
+        .split-right li::before { background: #0f3460; }
+
+        /* === LLM Provider 테이블 === */
+        .llm-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        .llm-table thead th {
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            color: white;
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 14px;
+            border-bottom: 2px solid #e94560;
+        }
+
+        .llm-table tbody td {
+            padding: 12px 18px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #444;
+        }
+
+        .llm-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .llm-badge.cloud { background: #e8f4fd; color: #0f3460; }
+        .llm-badge.local { background: #f4ecf7; color: #9b59b6; }
+        .llm-badge.hybrid { background: #e8f8f5; color: #16a085; }
+
+        /* === 기술 상세 Grid (2x2) === */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tech-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .tech-card h4 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a1a2e;
+        }
+        .tech-card p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555;
+        }
+        .tech-card .tech-badge {
+            display: inline-block;
+            background: #e8f4fd;
+            color: #0f3460;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        /* === 코드 블록 === */
+        .code-block {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 24px 28px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #e0e0e0;
+            overflow-x: auto;
+        }
+        .code-block .keyword { color: #e94560; }
+        .code-block .string { color: #16a085; }
+        .code-block .comment { color: #666; }
+        .code-block .function { color: #f39c12; }
+        .code-block .variable { color: #9b59b6; }
+
+        /* === 종료 화면 (Summary/Closing Slide) === */
+        .slide-15 {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+        }
+
+        .summary-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+
+        .summary-left h3, .summary-right h3 {
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .summary-stat {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .summary-stat .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #e94560;
+        }
+        .summary-stat .label {
+            font-size: 18px;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .roadmap {
+            list-style: none;
+        }
+        .roadmap li {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .roadmap li span {
+            font-size: 18px;
+        }
+        .roadmap-phase {
+            background: rgba(233, 69, 96, 0.3);
+            padding: 4px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .closing-message {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .closing-message p {
+            font-size: 17px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .closing-links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .closing-links a {
+            color: #e94560;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 8px 20px;
+            border: 1px solid rgba(233, 69, 96, 0.5);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .closing-links a:hover {
+            background: rgba(233, 69, 96, 0.2);
+        }
+
+        /* === 코드 + 설명 레이아웃 === */
+        .code-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            flex: 1;
+            min-height: 0;
+        }
+        .code-section h3 {
+            font-size: 22px;
+            margin-bottom: 16px;
+            color: #1a1a2e;
+        }
+        .code-section p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        /* === 네비게이션 및 PDF === */
+        .nav-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0.7;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .pdf-download-btn {
+            position: fixed;
+            top: 24px;
+            right: 30px;
+            z-index: 1001;
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .ppt-download-btn {
+            position: fixed;
+            top: 24px;
+            right: 190px;
+            z-index: 1001;
+            background: #0f3460;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .ppt-download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @media print {
+            body {
+                overflow: visible;
+                display: block;
+            }
+            .slides-wrapper {
+                transform: none !important;
+                display: block;
+                width: auto;
+            }
+            .slide {
+                min-width: 0;
+                width: 100%;
+                height: 100vh;
+                page-break-after: always;
+                page-break-inside: avoid;
+                flex-shrink: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .nav-hint, .pdf-download-btn, .ppt-download-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="slides-wrapper">
+
+    <!-- === 슬라이드 1: 시작 화면 === -->
+    <div class="slide slide-1">
+        <div class="title-logo">
+            Lite<span>LLM</span>
+        </div>
+        <div class="title-subtitle">제공사가 바뀌어도 코드는 그대로 — 100+ LLM을 하나로 연결하는 AI Gateway</div>
+        <div class="title-meta">Open Source AI Gateway | BerriAI | Y Combinator W23</div>
+        <div class="title-badge">53,000+ GitHub Stars &middot; 22,900+ 프로덕션 채택</div>
+        <div class="slide-number">1 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 2: 개요 Grid === -->
+    <div class="slide slide-content">
+        <div class="slide-header">
+            <h2>LiteLLM이란?</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="overview-grid">
+            <div class="overview-card">
+                <h3><svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> 통합 인터페이스</h3>
+                <p>OpenAI, Anthropic, Vertex AI 등 100개 이상의 LLM을 하나의 completion() 호출로 사용. provider만 바꾸면 코드 수정 불필요.</p>
+            </div>
+            <div class="overview-card">
+                <h3><svg viewBox="0 0 24 24"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg> AI Gateway</h3>
+                <p>Self-hosted 프록시 서버로 팀 전체의 LLM 접근을 중앙 관리. Virtual Keys, 예산 제한, 로드 밸런싱을 오픈소스로 제공.</p>
+            </div>
+            <div class="overview-card">
+                <h3><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Python SDK</h3>
+                <p>OpenAI SDK와 100% 호환. completion, embedding, streaming을 동일한 인터페이스로 호출하고, Observability 콜백으로 즉시 모니터링 가능.</p>
+            </div>
+            <div class="overview-card">
+                <h3><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> 프로덕션 레디</h3>
+                <p>P95 레이턴시 8ms @ 1k RPS. Docker, Terraform, Helm Chart 등 검증된 배포 옵션. Stripe, Google ADK 등 대규모 기업 채택.</p>
+            </div>
+        </div>
+        <div class="stat-row">
+            <div class="stat-item">
+                <div class="stat-number">53k+</div>
+                <div class="stat-label">GitHub Stars</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100+</div>
+                <div class="stat-label">Support Providers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">22.9k</div>
+                <div class="stat-label">Used by Projects</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">1,398</div>
+                <div class="stat-label">Releases</div>
+            </div>
+        </div>
+        <div class="slide-number">2 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 3: 핵심 기능 === -->
+    <div class="slide slide-content">
+        <div class="slide-header">
+            <h2>핵심 기능</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <h4>Unified Interface</h4>
+                <p>provider/model 형식으로 호출하면 SDK, 인증, 포맷 차이를 완전히 추상화. 코드 변경 없이 모델 전환 가능.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                </div>
+                <h4>Routing & Failover</h4>
+                <p>여러 배포 간 로드 밸런싱 + 장애 시 자동 fallback. Azure, OpenAI 등 크로스 배포 장애도 자동 복구.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+                </div>
+                <h4>Guardrails</h4>
+                <p>콘텐츠 필터링, PII 마스킹, 안전성 검사를 요청/응답 파이프라인에 삽입. 커스텀 가드레일도 가능.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+                </div>
+                <h4>Cost Tracking</h4>
+                <p>키별, 팀별, 사용자별 사용량과 비용을 실시간 추적. 예산 한도 초과 시 자동 차단 지원.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <h4>MCP & Agent Gateway</h4>
+                <p>LLM 호출뿐 아니라 MCP 도구, A2A 에이전트까지 하나의 엔드포인트로 통합. 별도 게이트웨이 불필요.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+                </div>
+                <h4>Observability</h4>
+                <p>Langfuse, MLflow, Helicone 등과 원 줄 콜백으로 즉시 연동. 커스텀 콜백으로 전 과정 모니터링 가능.</p>
+            </div>
+        </div>
+        <div class="slide-number">3 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 4: 지원 제공사 === -->
+    <div class="slide slide-content">
+        <div class="slide-header">
+            <h2>지원 LLM 제공사</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="content-area">
+            <table class="llm-table">
+                <thead>
+                    <tr>
+                        <th>카테고리</th>
+                        <th>제공사</th>
+                        <th>타입</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>메이저 클라우드</strong></td>
+                        <td>OpenAI, Anthropic, Google Vertex AI, Azure OpenAI, AWS Bedrock</td>
+                        <td><span class="llm-badge cloud">Cloud</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>추가 클라우드</strong></td>
+                        <td>Cohere, AI21, PaLM, Sagemaker, IBM watsonx</td>
+                        <td><span class="llm-badge cloud">Cloud</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>오픈소스 / Self-host</strong></td>
+                        <td>Ollama, vLLM, HuggingFace, NVIDIA NIM, Text Generation Inference</td>
+                        <td><span class="llm-badge local">Local</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>에이전트 프레임워크</strong></td>
+                        <td>LangChain, LlamaIndex, Google ADK, CrewAI</td>
+                        <td><span class="llm-badge hybrid">Framework</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>기타</strong></td>
+                        <td>100개 이상의 추가 제공사 &middot; 새 제공사 지속 추가 중</td>
+                        <td><span class="llm-badge hybrid">+More</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="slide-number">4 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 5: Quick Start === -->
+    <div class="slide slide-content">
+        <div class="slide-header">
+            <h2>Quick Start</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="code-layout">
+            <div class="code-section">
+                <h3>Python SDK</h3>
+                <p>model 파라미터만 바꾸면 모든 제공사를 동일한 방식으로 호출합니다.</p>
+                <div class="code-block">
+<span class="keyword">from</span> litellm <span class="keyword">import</span> completion
+
+<span class="comment"># OpenAI</span>
+response = <span class="function">completion</span>(
+    model=<span class="string">"openai/gpt-4o"</span>,
+    messages=[{<span class="string">"role"</span>: <span class="string">"user"</span>,
+               <span class="string">"content"</span>: <span class="string">"안녕하세요!"</span>}]
+)
+
+<span class="comment"># 제공사 전환 — 코드 변경 불필요</span>
+<span class="comment"># model="anthropic/claude-3-5-sonnet"</span>
+<span class="comment"># model="vertex_ai/gemini-1.5-pro"</span>
+<span class="comment"># model="bedrock/anthropic.claude-haiku"</span>
+                </div>
+            </div>
+            <div class="code-section">
+                <h3>Proxy Server (AI Gateway)</h3>
+                <p>프록시를 배포하면 OpenAI SDK를 그대로 사용할 수 있습니다.</p>
+                <div class="code-block">
+<span class="comment"># 프록시 시작</span>
+$ litellm --model openai/gpt-4o
+<span class="comment"># → http://localhost:4000</span>
+
+<span class="comment"># OpenAI SDK로 그대로 호출</span>
+<span class="keyword">import</span> openai
+
+client = openai.<span class="function">OpenAI</span>(
+    api_key=<span class="string">"anything"</span>,
+    base_url=<span class="string">"http://localhost:4000"</span>
+)
+
+response = client.chat.completions.<span class="function">create</span>(
+    model=<span class="string">"gpt-4o"</span>,
+    messages=[{<span class="string">"role"</span>: <span class="string">"user"</span>,
+               <span class="string">"content"</span>: <span class="string">"Write a poem"</span>}]
+)
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">5 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 6: 에러 핸들링 & Observability === -->
+    <div class="slide slide-content">
+        <div class="slide-header">
+            <h2>에러 핸들링 & Observability</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="split-layout">
+            <div class="split-section split-left">
+                <h3>에러를 제공사에 맞춰 자동 변환</h3>
+                <ul>
+                    <li>모든 제공사 에러를 OpenAI 예외 타입으로 자동 매핑</li>
+                    <li>AuthenticationError, RateLimitError 등 일관된 인터페이스</li>
+                    <li>제공사를 바꿔도 기존 에러 핸들링 코드 그대로 유지</li>
+                    <li>Streaming, Function Calling 등 모든 시나리오에서 동작</li>
+                </ul>
+            </div>
+            <div class="split-section split-right">
+                <h3>전 과정을 한 줄로 추적</h3>
+                <ul>
+                    <li>Langfuse, MLflow, Helicone 등 성숙한 관측 도구와 즉시 연동</li>
+                    <li>커스텀 콜백으로 요청/응답/비용/레이턴시 전부 수집</li>
+                    <li>OpenTelemetry 기반 분산 추적 지원</li>
+                    <li>프로덕션 환경에서도 부담 없는 오버헤드</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-number">6 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 7: 배포 방식 === -->
+    <div class="slide slide-content">
+        <div class="slide-header">
+            <h2>유연한 배포 방식</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="tech-grid">
+            <div class="tech-card">
+                <h4>Docker</h4>
+                <p>docker run 또는 docker-compose로 즉시 배포. 프로덕션 환경에서도 안정적으로 사용 가능합니다.</p>
+                <span class="tech-badge">가장 간편한 시작</span>
+            </div>
+            <div class="tech-card">
+                <h4>Terraform</h4>
+                <p>AWS ECS Fargate, GCP Cloud Run용 프로덕션 모듈 제공. Managed Postgres + Redis 통합 구성.</p>
+                <span class="tech-badge">인프라 자동화</span>
+            </div>
+            <div class="tech-card">
+                <h4>Kubernetes</h4>
+                <p>Helm Chart로 K8s 클러스터에 배포. Auto-scaling, 서비스 디스커버리, 로드 밸런싱 지원.</p>
+                <span class="tech-badge">대규모 오케스트레이션</span>
+            </div>
+            <div class="tech-card">
+                <h4>Managed Service</h4>
+                <p>BerriAI에서 호스팅하는 완전 관리형 버전. 인프라 걱정 없이 바로 사용, 엔터프라이즈 SLA 적용.</p>
+                <span class="tech-badge">완전 관리형</span>
+            </div>
+        </div>
+        <div class="slide-number">7 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 8: 엔터프라이즈 === -->
+    <div class="slide slide-content">
+        <div class="slide-header">
+            <h2>엔터프라이즈 기능</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="split-layout">
+            <div class="split-section split-left">
+                <h3>오픈소스로 충분히 강력한 기반</h3>
+                <ul>
+                    <li>100+ LLM 제공사 통합 지원</li>
+                    <li>Python SDK & Proxy Server</li>
+                    <li>Virtual Keys & Budget 관리</li>
+                    <li>Load Balancing & Failover</li>
+                    <li>Cost Tracking & Observability</li>
+                    <li>Docker / Terraform / Helm 배포</li>
+                </ul>
+            </div>
+            <div class="split-section split-right">
+                <h3>엔터프라이즈로 한 단계 더</h3>
+                <ul>
+                    <li>SSO / SAML 인증으로 안전한 접근 관리</li>
+                    <li>감사 로그 (Audit Logs)로 활동 추적</li>
+                    <li>고급 보안 기능 & 데이터 격리</li>
+                    <li>전용 지원 채널 (Discord + Slack)</li>
+                    <li>커스텀 SLA & 우선 기능 구현</li>
+                    <li>Stripe, Google 등 대규모 기업 검증</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-number">8 / 9</div>
+    </div>
+
+    <!-- === 슬라이드 9: 종료 화면 === -->
+    <div class="slide slide-15">
+        <div class="summary-content">
+            <div class="summary-left">
+                <h3>총 정리</h3>
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <div class="number">100+</div>
+                        <div class="label">지원 LLM</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="number">53k+</div>
+                        <div class="label">GitHub Stars</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="number">8ms</div>
+                        <div class="label">P95 Latency</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="number">22.9k</div>
+                        <div class="label">프로덕션 채택</div>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-right">
+                <h3>핵심 장점</h3>
+                <ul class="roadmap">
+                    <li><span class="roadmap-phase">Unified</span><span>하나의 completion()으로 모든 LLM 호출</span></li>
+                    <li><span class="roadmap-phase">Compatible</span><span>OpenAI SDK 100% 호환 — 코드 변경 불필요</span></li>
+                    <li><span class="roadmap-phase">Production</span><span>Virtual Keys, Budget, Guardrails 내장</span></li>
+                    <li><span class="roadmap-phase">Flexible</span><span>Docker, Terraform, Helm, Managed 중 선택</span></li>
+                    <li><span class="roadmap-phase">Extensible</span><span>MCP, A2A Agent, Observability 통합</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="closing-message">
+            <p>LLM 제공사를 바꿀 때마다 코드를 고치는 대신, LiteLLM 하나로 해결하세요.</p>
+            <div class="closing-links">
+                <a href="https://github.com/BerriAI/litellm">GitHub</a>
+                <a href="https://docs.litellm.ai">Documentation</a>
+                <a href="https://discord.gg/wuPM9dRgDw">Community Discord</a>
+            </div>
+        </div>
+        <div class="slide-number">9 / 9</div>
+    </div>
+
+</div>
+
+<!-- === 네비게이션 + PDF/PPT 버튼 (wrapper 밖) === -->
+<div class="nav-hint">← → 키로 슬라이드 이동 | Ctrl+P로 인쇄</div>
+<button class="ppt-download-btn" id="pptBtn" onclick="downloadPPT()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <rect x="8" y="12" width="8" height="6" rx="1"/>
+    </svg>
+    PPT 다운로드
+</button>
+<button class="pdf-download-btn" onclick="downloadPDF()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+    PDF 다운로드
+</button>
+
+<script>
+    (function() {
+        var current = 0;
+        var slides = document.querySelectorAll('.slide');
+        var total = slides.length;
+        var wrapper = document.querySelector('.slides-wrapper');
+        var locked = false;
+
+        function goTo(idx) {
+            if (idx < 0 || idx >= total || locked) return;
+            locked = true;
+            current = idx;
+            wrapper.style.transform = 'translateX(' + (-current * 100) + 'vw)';
+            setTimeout(function() { locked = false; }, 450);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                goTo(current + 1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                goTo(current - 1);
+            }
+        });
+    })();
+
+    function downloadPDF() {
+        window.print();
+    }
+
+    function downloadPPT() {
+        var btn = document.getElementById('pptBtn');
+        btn.disabled = true;
+        btn.textContent = '생성 중...';
+
+        var slides = document.querySelectorAll('.slide');
+        var wrapper = document.querySelector('.slides-wrapper');
+        var savedTransform = wrapper.style.transform;
+
+        wrapper.style.transition = 'none';
+
+        var images = [];
+        var index = 0;
+
+        function captureNext() {
+            if (index >= slides.length) {
+                wrapper.style.transform = savedTransform;
+                wrapper.style.transition = 'transform 0.4s ease';
+                buildPPTX(images);
+                return;
+            }
+
+            wrapper.style.transform = 'translateX(' + (-index * 100) + 'vw)';
+
+            setTimeout(function() {
+                html2canvas(slides[index], {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: null,
+                    logging: false
+                }).then(function(canvas) {
+                    images.push(canvas.toDataURL('image/png'));
+                    index++;
+                    captureNext();
+                });
+            }, 100);
+        }
+
+        captureNext();
+    }
+
+    function buildPPTX(images) {
+        var pptx = new PptxGenJS();
+        pptx.defineLayout({ name: 'CUSTOM', width: 13.333, height: 7.5 });
+        pptx.layout = 'CUSTOM';
+
+        images.forEach(function(dataUrl, i) {
+            var slide = pptx.addSlide();
+            slide.addImage({
+                data: dataUrl,
+                x: 0,
+                y: 0,
+                w: 13.333,
+                h: 7.5
+            });
+        });
+
+        pptx.writeFile({ fileName: 'litellm-intro.pptx' }).then(function() {
+            var btn = document.getElementById('pptBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><rect x="8" y="12" width="8" height="6" rx="1"/></svg> PPT 다운로드';
+        });
+    }
+</script>
+</body>
+</html>
