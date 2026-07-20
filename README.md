@@ -2,15 +2,30 @@
 
 HTML 기반 셀프 컨테이닝 프레젠테이션 생성 도구. 빌드 도구 없이 단일 HTML 파일로 슬라이드쇼를 만들고, 브라우저에서 바로 열람하거나 PDF/PPT로 출력할 수 있습니다.
 
+---
+
 ## 프로젝트 구조
 
 ```
 pptslide/
-├── agent.md                        # 프레젠테이션 템플릿 가이드 (사양 + 규격)
-├── presentation/
-│   └── litellm-intro.html          # LiteLLM 소개 프레젠테이션 (예시)
-└── README.md
+├── .opencode/
+│   └── skills/
+│       └── ppt-presentation/
+│           └── SKILL.md           # ppt-presentation skill 정의 파일
+├── .sisyphus/
+│   └── plans/                      # 작업 계획 파일
+├── agent.md                        # (v1) 프레젠테이션 템플릿 가이드 (레거시)
+├── README.md
+└── presentation/
+    ├── litellm-intro.html          # (v1) LiteLLM 소개 (레거시 템플릿)
+    ├── litellm-intro-v2.html       # (v2) LiteLLM 소개 (Quote-Style)
+    ├── github-actions-intro.html   # (v1) GitHub Actions 소개
+    ├── ai-senior-advice.html       # (v1) 시니어 개발자 조언
+    ├── self-esteem.html            # (v1) 자존감 향상
+    └── figma-weave.html            # (v2) Figma Weave 소개 (9슬라이드)
 ```
+
+---
 
 ## 특징
 
@@ -19,20 +34,59 @@ pptslide/
 - **키보드 네비게이션** — `← →` / `↑ ↓` 화살표 키로 슬라이드 이동
 - **PDF 다운로드** — `Ctrl+P` 또는 PDF 버튼으로 전체 슬라이드 출력
 - **PPT 다운로드** — html2canvas + pptxgenjs로 각 슬라이드 스크린샷을 PPTX 파일로 생성
-- **다양한 레이아웃** — 2x2 그리드, 3열 카드, 분할 레이아웃, 코드 블록, 테이블 등 템플릿 제공
+- **이미지 ZIP 다운로드** — 모든 슬라이드를 개별 PNG 파일로 ZIP 압축 저장
 - **Lucide SVG 아이콘** — 이모지 대신 벡터 아이콘 사용으로 일관된 appearance
 
-## 빠른 시작
+---
 
-### 1. 기존 프레젠테이션 열기
+## 템플릿 버전
 
-```bash
-open presentation/litellm-intro.html
+### v1 (레거시 — agent.md)
+- 기존 템플릿, `agent.md`에 정의
+- 다양한 레이아웃 (2x2 그리드, 3열 카드, 분할 레이아웃, 코드 블록 등)
+- `litellm-intro.html`, `github-actions-intro.html` 등이 해당
+
+### v2 (Quote-Style — ppt-presentation skill)
+- **OpenCode Skill** 시스템 기반 템플릿
+- 다크 블루 그라디언트 타이틀/클로징 슬라이드 + 흰색 컨텐츠 슬라이드
+- 중앙 정렬 큰 따옴표(quote) 형식의 메시지 전달
+- 각 슬라이드는 하나의 핵심 메시지만 전달 (60px quote-text)
+- 구조적 순서: `quote-number` → `accent-bar` → `quote-text` → `quote-sub`
+- `litellm-intro-v2.html`, `figma-weave.html`이 해당
+
+---
+
+## ppt-presentation Skill 사용법
+
+이 프로젝트는 OpenCode Skill 시스템을 통해 v2 Quote-Style 프레젠테이션을 생성합니다.
+
+### Skill 파일 위치
+
+```
+~/.config/opencode/skills/ppt-presentation/SKILL.md
 ```
 
-### 2. 새 프레젠테이션 만들기
+또는 프로젝트 내:
+```
+.opencode/skills/ppt-presentation/SKILL.md
+```
 
-`agent.md`의 템플릿을 참고하여 `presentation/` 디렉토리에 `.html` 파일을 생성합니다.
+### Skill을 통한 생성 (OpenCode AI)
+
+AI에게 프레젠테이션 제작을 요청하면 자동으로 ppt-presentation skill이 로드되어 단일 HTML 파일을 생성합니다.
+
+```
+[주제]에 대한 8장 프레젠테이션을 만들어줘
+```
+
+예시:
+```
+Figma Weave에 대한 8장 프레젠테이션을 만들어줘
+```
+
+### 수동 생성 (OpenCode 외 환경)
+
+`SKILL.md`의 템플릿 구조를 참고하여 직접 HTML을 작성할 수 있습니다.
 
 ```html
 <!DOCTYPE html>
@@ -41,101 +95,77 @@ open presentation/litellm-intro.html
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>제목</title>
+    <!-- v2 필수 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        /* agent.md 섹션 2~7의 CSS 복사 */
+        /* SKILL.md 섹션 2~7의 CSS */
     </style>
 </head>
 <body>
     <div class="slides-wrapper">
-        <!-- 슬라이드 추가 -->
+        <!-- .slide.slide-1 (타이틀) -->
+        <!-- .slide.slide-quote (컨텐츠) x N -->
+        <!-- .slide.slide-closing (클로징) -->
     </div>
-    <!-- 네비게이션 + 버튼 (wrapper 밖) -->
-    <div class="nav-hint">← → 키로 슬라이드 이동 | Ctrl+P로 인쇄</div>
-    <button class="ppt-download-btn" id="pptBtn" onclick="downloadPPT()">PPT 다운로드</button>
-    <button class="pdf-download-btn" onclick="downloadPDF()">PDF 다운로드</button>
+    <!-- 네비게이션 + 다운로드 버튼 -->
     <script>
-        /* agent.md 섹션 7의 JS 복사 */
+        /* SKILL.md 섹션 8의 JavaScript */
     </script>
 </body>
 </html>
 ```
 
-## 사용법
+### v2 슬라이드 구조
 
-### Step 1. 레포지토리 클론
+| 슬라이드 | CSS 클래스 | 설명 |
+|----------|-----------|------|
+| 타이틀 | `.slide-1` | 다크 블루 그라디언트 배경, 타이틀 + 부제목 |
+| 컨텐츠 | `.slide-quote` | 흰색 배경, 인용구 형식의 핵심 메시지 |
+| 종료 | `.slide-closing` | 타이틀과 동일한 배경, 마무리 메시지 |
 
-```bash
-git clone <repo-url>
-cd pptslide
-```
+### CSS 클래스 규칙 (v2)
 
-### Step 2. AI에게 프롬프트 입력
+- 모든 컨텐츠 슬라이드는 `.slide-quote` — 다른 클래스 사용 금지
+- 제목 태그(`<h2>` 등) 사용 금지 — `.quote-number` / `.quote-text`로 대체
+- 이모지 사용 금지 — `<i data-lucide="...">`만 사용
+- 구조 순서: `quote-number` → `accent-bar` → `quote-text` → `quote-sub`
 
-`agent.md`를 참조하여 주제에 맞는 발표 자료를 요청합니다.
+---
 
-```
-agent.md를 참조해서 {{주제}}에 대한 발표용 문서 초안을 작성해줘
-```
+## 생성된 프레젠테이션
 
-**예시:**
+### Figma Weave 소개 (`figma-weave.html`)
 
-```
-agent.md를 참조해서 Rust 언어의 장점과 도입 사례에 대한 발표용 문서 초안을 작성해줘
-```
+| 항목 | 내용 |
+|------|------|
+| 템플릿 | v2 Quote-Style |
+| 슬라이드 수 | 9장 (타이틀 + 7개 컨텐츠 + 클로징) |
+| 주요 내용 | Figma의 Weavy 인수, 노드 기반 워크플로우, 멀티 모델 믹싱, 레이어 편집, Figma 생태계 통합, AI 디자인 플랫폼 통합 |
+| 이미지 | weave.figma.com 공식 CDN의 제품 스크린샷 사용 (노드 기반 워크플로우 인터페이스) |
+| 생성 과정 | 1. 8장으로 초안 생성 → 2. 전체 구성도 슬라이드 추가 (9장) → 3. 공식 사이트 이미지로 교체 |
 
-```
-agent.md를 참조해서 마이크로서비스 아키텍처 전환 가이드 발표 자료를 만들어줘
-```
+### LiteLLM 소개 v2 (`litellm-intro-v2.html`)
 
-```
-agent.md를 참조해서 우리 팀의 CI/CD 파이프라인 개선 방안에 대한 발표를 작성해줘
-```
+| 항목 | 내용 |
+|------|------|
+| 템플릿 | v2 Quote-Style |
+| 슬라이드 수 | 12장 |
 
-### Step 3. 결과 확인 및 출력
+---
 
-AI가 `presentation/` 디렉토리에 HTML 파일을 생성합니다.
+## 빠른 시작
 
 ```bash
 # 브라우저에서 열기
-open presentation/*.html
+open presentation/figma-weave.html
+
+# 키보드 네비게이션
+#  - 좌/우 화살표: 이전/다음 슬라이드
+#  - Ctrl+P: PDF 출력
+
+# 모든 프레젠테이션 목록
+ls presentation/*.html
 ```
-
-| 출력 방법 | 방법 |
-|-----------|------|
-| 브라우저 열람 | `← →` 화살표 키로 슬라이드 이동 |
-| PDF 다운로드 | 우측 상단 **PDF 다운로드** 버튼 또는 `Ctrl+P` |
-| PPT 다운로드 | 우측 상단 **PPT 다운로드** 버튼 (스크린샷 기반) |
-
-## 슬라이드 유형
-
-| 유형 | CSS 클래스 | 용도 |
-|------|-----------|------|
-| 시작 화면 | `.slide-1` | 타이틀, 부제목, 배지 |
-| 개요 그리드 | `.slide-2` 등 | 2x2 카드형 소개 |
-| 피처 그리드 | `.slide-3` 등 | 3열 기능 목록 |
-| 블록 다이어그램 | `.slide-4` | 아키텍처 시각화 |
-| 스크린샷 | `.slide-5`~`.slide-8` | 전폭 이미지 |
-| 코드 블록 | `.slide-9` | CLI 명령어, 코드 예시 |
-| 분할 레이아웃 | `.slide-11` | 2열 비교 |
-| 테크 그리드 | `.slide-12`~`.slide-13` | 2x2 기술 상세 |
-| LLM 테이블 | `.slide-llm` | 제공사 목록 |
-| 종료 화면 | `.slide-15` | 총정리, 핵심 장점 |
-
-## 규격
-
-| 항목 | 값 |
-|------|-----|
-| 페이지 크기 | A4 landscape (297x210mm) |
-| 슬라이드 패딩 | `60px 80px` (상하 60px, 좌우 80px) |
-| 타이틀 폰트 | 36px / 700 weight |
-| 본문 폰트 | 18px |
-| 강조 색상 | `#e94560` (Red) |
-| 다크 배경 | `#1a1a2e → #16213e → #0f3460` |
-
-## 참고 자료
-
-- [agent.md](agent.md) — 전체 템플릿 사양, CSS 규격, 레이아웃 패턴, 네비게이션/PDF/PPT 구현 코드
-- [html2canvas](https://html2canvas.hertzen.com/) — DOM 캡처 라이브러리
-- [PptxGenJS](https://gitbrent.github.io/PptxGenJS/) — 브라우저 PPTX 생성 라이브러리
